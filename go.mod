@@ -7,4 +7,6 @@ require (
 	github.com/k0kubun/pp v2.4.0+incompatible
 	github.com/mattn/go-colorable v0.1.10 // indirect
 	github.com/stretchr/testify v1.7.0
+	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
+	golang.org/x/tools v0.1.7 // indirect
 )

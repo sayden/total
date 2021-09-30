@@ -7,14 +7,19 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	in := `user{
+	in := `user {
     key: value
-    more_key: more_value
-    list: [12 31 4]
+	number: 12
+	another_key: another_value
+	OneMore4: asda
+	whatifitsnull: null
+	another_number: 99
 }`
 
 	v, err := Parse([]byte(in))
 	assert.NoError(t, err)
 
 	pp.Print(v)
+
+
 }
