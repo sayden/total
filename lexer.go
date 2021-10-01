@@ -14,7 +14,7 @@ import (
 
 type Total struct {
 	docName string
-	data    map[string]interface{}
+	data    interface{}
 }
 
 type lexer struct {
@@ -60,7 +60,6 @@ var integer = regexp.MustCompile("^[0-9]+$")
 // Lex (MANDATORY) satisfies yyLexer. Called every time the parser wants a new token
 // which MUST be placed in its respective variable on yySymType (ch or part in this example)
 func (p *lexer) Lex(lval *yySymType) int {
-	var err error
 	for tok := p.s.Scan(); tok != scanner.EOF; tok = p.s.Scan() {
 		txt := p.s.TokenText()
 
@@ -69,21 +68,13 @@ func (p *lexer) Lex(lval *yySymType) int {
 		if txt == "|>" {
 			longtext := p.longTextCapture()
 			fmt.Printf("%s: Long text: '%s'\n", p.s.Position, longtext)
-			lval.any = longtext
-			return WORD
+			lval.String = longtext
+			return TEXT
 		}
 
-		if integer.MatchString(txt) {
-			lval.any, err = strconv.Atoi(txt)
-			if err != nil {
-				fmt.Printf("error getting integer number from '%s': %s\n", txt, err.Error())
-			}
-			return INTEGER
-		}
-
-		if word.MatchString(txt) {
-			lval.any = txt
-			return p.checkString(txt, lval)
+		_, n := p.captureValue(txt, lval)
+		if n != -1 {
+			return n
 		}
 
 		switch txt {
@@ -100,6 +91,10 @@ func (p *lexer) Lex(lval *yySymType) int {
 			return CL
 		case ':':
 			return COLON
+		case '[':
+			return p.captureList(lval)
+		case ']':
+			return CB
 		}
 
 		return int(tok)
@@ -108,20 +103,55 @@ func (p *lexer) Lex(lval *yySymType) int {
 	return 0
 }
 
-func (p *lexer) checkString(txt string, lval *yySymType) int {
+func (p *lexer) captureValue(txt string, lval *yySymType) (interface{}, int) {
+	if integer.MatchString(txt) {
+		n, err := strconv.Atoi(txt)
+		lval.Integer = n
+		if err != nil {
+			fmt.Printf("error getting integer number from '%s': %s\n", txt, err.Error())
+		}
+		return n, INTEGER
+	}
+
+	if word.MatchString(txt) {
+		return p.checkString(txt, lval)
+	}
+
+	return nil, -1
+}
+
+func (p *lexer) captureList(lval *yySymType) int {
+	list := make(Values, 0)
+	for tok := p.s.Scan(); tok != scanner.EOF; tok = p.s.Scan() {
+		if tok == ']' {
+			lval.List = list
+			return LIST
+		}
+
+		v, n := p.captureValue(p.s.TokenText(), lval)
+
+		list = append(list, &Value{kind: n, data: v})
+	}
+
+	lval.List = list
+	return LIST
+}
+
+func (p *lexer) checkString(txt string, lval *yySymType) (interface{}, int) {
 	switch txt {
 	case "null":
-		lval.null = nil
-		return NULL
+		lval.Nulltype = nil
+		return nil, NULLTYPE
 	case "true":
-		lval.ch = 1
-		return TRUE
+		lval.Boolean = true
+		return true, BOOLEAN
 	case "false":
-		lval.ch = 0
-		return FALSE
+		lval.Boolean = false
+		return false, BOOLEAN
 	}
-	lval.any = txt
-	return WORD
+
+	lval.String = txt
+	return txt, WORD
 }
 
 func (p *lexer) longTextCapture() string {

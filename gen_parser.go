@@ -3,41 +3,43 @@ package main
 
 import __yyfmt__ "fmt"
 
-import "fmt"
-
 func setTotal(l yyLexer, v Total) {
 	l.(*lexer).total = v
 }
 
 type yySymType struct {
-	yys    int
-	result Total
+	yys   int
+	Total Total
 
-	ch byte
+	Value  *Value
+	Pair   *Pair
+	Object Object
 
-	any    interface{}
-	mapstr map[string]interface{}
-	list   []interface{}
-	null   *interface{}
-
-	str     string
-	integer int
-	float   float64
-	Boolean bool
+	Char     rune
+	Float    float64
+	Integer  int
+	String   string
+	Boolean  bool
+	List     Values
+	Nulltype *interface{}
 }
 
 const OP = 57346
 const CL = 57347
 const COLON = 57348
-const VALUE = 57349
-const NUMBER = 57350
-const WORD = 57351
-const INTEGER = 57352
-const OLT = 57353
-const CLT = 57354
-const TRUE = 57355
-const FALSE = 57356
-const NULL = 57357
+const OB = 57349
+const CB = 57350
+const OLT = 57351
+const CLT = 57352
+const VALUE = 57353
+const FLOAT = 57354
+const INTEGER = 57355
+const TEXT = 57356
+const WORD = 57357
+const BOOLEAN = 57358
+const NULLTYPE = 57359
+const LIST = 57360
+const OBJECT = 57361
 
 var yyToknames = [...]string{
 	"$end",
@@ -46,17 +48,19 @@ var yyToknames = [...]string{
 	"OP",
 	"CL",
 	"COLON",
-	"VALUE",
-	"NUMBER",
-	"WORD",
-	"INTEGER",
+	"OB",
+	"CB",
 	"OLT",
 	"CLT",
-	"TRUE",
-	"FALSE",
-	"NULL",
-	"'['",
-	"']'",
+	"VALUE",
+	"FLOAT",
+	"INTEGER",
+	"TEXT",
+	"WORD",
+	"BOOLEAN",
+	"NULLTYPE",
+	"LIST",
+	"OBJECT",
 }
 
 var yyStatenames = [...]string{}
@@ -73,62 +77,61 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 30
+const yyLast = 54
 
 var yyAct = [...]int{
-	23, 5, 26, 28, 24, 7, 14, 12, 21, 8,
-	15, 16, 13, 20, 6, 11, 3, 22, 8, 10,
-	9, 5, 1, 19, 17, 27, 25, 4, 18, 2,
+	27, 23, 26, 22, 3, 29, 16, 15, 30, 18,
+	19, 17, 23, 12, 22, 24, 5, 16, 15, 8,
+	18, 19, 17, 5, 28, 4, 23, 11, 22, 31,
+	1, 16, 15, 10, 18, 19, 17, 13, 14, 2,
+	23, 6, 22, 9, 7, 16, 15, 25, 18, 19,
+	17, 9, 20, 21,
 }
 
 var yyPact = [...]int{
-	7, -1000, -1000, 17, -1000, 9, -1000, 15, 13, -1000,
-	-3, 0, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
-	-3, -3, -1000, -15, -3, -9, -1000, -1000, -1000,
+	-11, -1000, -1000, 12, -1000, 36, -1000, 28, -1000, 7,
+	-1000, -1000, 19, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+	-1000, -1000, 5, -6, -1000, -5, -1000, 0, 33, -1000,
+	-1000, -1000,
 }
 
 var yyPgo = [...]int{
-	0, 29, 23, 5, 4, 28, 24, 0, 22,
+	0, 0, 24, 53, 52, 19, 44, 39, 25, 30,
 }
 
 var yyR1 = [...]int{
-	0, 8, 1, 2, 2, 3, 3, 4, 4, 4,
-	4, 4, 4, 4, 4, 6, 5, 7, 7,
+	0, 9, 7, 8, 8, 6, 6, 5, 5, 2,
+	2, 2, 2, 2, 2, 2, 4, 4, 3, 3,
+	1, 1,
 }
 
 var yyR2 = [...]int{
-	0, 1, 2, 2, 3, 3, 4, 1, 1, 1,
-	1, 1, 1, 1, 1, 3, 3, 1, 2,
+	0, 1, 2, 2, 3, 1, 2, 3, 3, 1,
+	1, 1, 1, 1, 1, 1, 2, 3, 2, 3,
+	1, 2,
 }
 
 var yyChk = [...]int{
-	-1000, -8, -1, 9, -2, 4, 5, -3, 9, 5,
-	6, -4, 10, 15, 9, 13, 14, -6, -5, -2,
-	16, 11, -3, -7, -4, -4, 17, -7, 12,
+	-1000, -9, -7, 15, -8, 4, 5, -6, -5, 15,
+	5, -5, 6, -2, -8, 13, 12, 17, 15, 16,
+	-4, -3, 9, 7, 10, -2, 8, -1, -2, 10,
+	8, -1,
 }
 
 var yyDef = [...]int{
-	0, -2, 1, 0, 2, 0, 3, 0, 0, 4,
-	0, 5, 7, 8, 9, 10, 11, 12, 13, 14,
-	0, 0, 6, 0, 17, 0, 15, 18, 16,
+	0, -2, 1, 0, 2, 0, 3, 0, 5, 0,
+	4, 6, 0, 7, 8, 9, 10, 11, 12, 13,
+	14, 15, 0, 0, 16, 0, 18, 0, 20, 17,
+	19, 21,
 }
 
 var yyTok1 = [...]int{
-	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 16, 3, 17,
+	1,
 }
 
 var yyTok2 = [...]int{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-	12, 13, 14, 15,
+	12, 13, 14, 15, 16, 17, 18, 19,
 }
 
 var yyTok3 = [...]int{
@@ -473,98 +476,105 @@ yydefault:
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			setTotal(yylex, yyDollar[1].result)
+			setTotal(yylex, yyDollar[1].Total)
 		}
 	case 2:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		{
-			yyVAL.result = Total{
-				docName: yyDollar[1].any.(string),
-				data:    yyDollar[2].mapstr,
+			yyVAL.Total = Total{
+				docName: yyDollar[1].String,
+				data:    yyDollar[2].Object,
 			}
 		}
 	case 3:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		{
-			yyVAL.mapstr = map[string]interface{}{}
+			yyVAL.Object = newObject()
 		}
 	case 4:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.mapstr = yyDollar[2].mapstr
+			yyVAL.Object = yyDollar[2].Object
 		}
 	case 5:
-		yyDollar = yyS[yypt-3 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.mapstr = map[string]interface{}{yyDollar[1].any.(string): yyDollar[3].any}
+			yyVAL.Object = newObject(yyDollar[1].Pair)
 		}
 	case 6:
-		yyDollar = yyS[yypt-4 : yypt+1]
+		yyDollar = yyS[yypt-2 : yypt+1]
 		{
-			yyDollar[4].mapstr[yyDollar[1].any.(string)] = yyDollar[3].any
-			yyVAL.mapstr = yyDollar[4].mapstr
+			yyVAL.Object = append(yyDollar[1].Object, yyDollar[2].Pair)
 		}
 	case 7:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.any = yyDollar[1].any
+			yyVAL.Pair = &Pair{name: yyDollar[1].String, value: yyDollar[3].Value}
 		}
 	case 8:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.any = nil
+			yyVAL.Pair = &Pair{name: yyDollar[1].String, value: &Value{kind: OBJECT, data: yyDollar[3].Object}}
 		}
 	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.any = yyDollar[1].any
+			yyVAL.Value = &Value{kind: INTEGER, data: yyDollar[1].Integer}
 		}
 	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.any = yyDollar[1].Boolean
+			yyVAL.Value = &Value{kind: FLOAT, data: yyDollar[1].Float}
 		}
 	case 11:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.any = yyDollar[1].Boolean
+			yyVAL.Value = &Value{kind: NULLTYPE, data: nil}
 		}
 	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.any = yyDollar[1].list
+			yyVAL.Value = &Value{kind: WORD, data: yyDollar[1].String}
 		}
 	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.any = yyDollar[1].any
+			yyVAL.Value = &Value{kind: BOOLEAN, data: yyDollar[1].Boolean}
 		}
 	case 14:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.any = yyDollar[1].mapstr
+			yyVAL.Value = &Value{kind: TEXT, data: yyDollar[1].String}
 		}
 	case 15:
-		yyDollar = yyS[yypt-3 : yypt+1]
-		{
-			fmt.Println(yyDollar[2].list)
-			yyVAL.list = yyDollar[2].list
-		}
-	case 16:
-		yyDollar = yyS[yypt-3 : yypt+1]
-		{
-			yyVAL.any = yyDollar[2].any
-		}
-	case 17:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.list = []interface{}{yyDollar[1].any}
+			yyVAL.Value = &Value{kind: LIST, data: yyDollar[1].Value}
+		}
+	case 16:
+		yyDollar = yyS[yypt-2 : yypt+1]
+		{
+			yyVAL.String = ""
 		}
 	case 18:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		{
-			fmt.Println(yyDollar[2].list)
-			yyVAL.list = append(yyDollar[2].list, yyDollar[1].any)
+			yyVAL.Value = &Value{kind: LIST, data: &Values{}}
+		}
+	case 19:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.Value = &Value{kind: LIST, data: yyDollar[2].List}
+		}
+	case 20:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.List = Values{yyDollar[1].Value}
+		}
+	case 21:
+		yyDollar = yyS[yypt-2 : yypt+1]
+		{
+			yyVAL.List = append(yyDollar[2].List, yyDollar[1].Value)
 		}
 	}
 	goto yystack /* stack new state and value */

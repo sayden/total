@@ -14,6 +14,9 @@ func TestParser(t *testing.T) {
 	OneMore4: asda
 	whatifitsnull: null
 	another_number: 99
+	inner_block {
+		inner_key: inner_value
+	}
 }`
 
 	v, err := Parse([]byte(in))
