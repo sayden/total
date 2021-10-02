@@ -1,25 +1,22 @@
 %{
-package main
-
-func setTotal(l yyLexer, v Total) {
-  l.(*lexer).total = v
-}
+package total
 %}
 
 %union{
 	Total Total
 
-	Value *Value
-	Pair *Pair
-	Object Object
+	value *value
+	kv *Kv
+	object object
 
-	Char rune
-	Float float64
-	Integer int
-	String string
-	Boolean bool
-	List Values
-	Nulltype *interface{}
+	char rune
+	float float64
+	integer int
+	string string
+	boolean bool
+	list values
+	nulltype interface{}
+	any interface{}
 }
 
 // Separators
@@ -27,74 +24,72 @@ func setTotal(l yyLexer, v Total) {
 %token <String> OLT CLT
 
 // Tokens
-%token <Value> VALUE
-%token <Float> FLOAT
-%token <Integer> INTEGER
-%token <String> TEXT WORD
-%token <Boolean> BOOLEAN
-%token <Nulltype> NULLTYPE
-%token <List> LIST
-%token <Object> OBJECT
+%token <value> VALUE
+%token <float> FLOAT
+%token <integer> INTEGER
+%token <string> TEXT WORD
+%token <boolean> BOOLEAN
+%token <nulltype> NULLTYPE
+%token <list> LIST
+%token <object> OBJECT
 
 // Types
-%type <List> list_values
-%type <Value> value list
-%type <String> long_text
-%type <Pair> pair
-%type <Object> object
-%type <Total> full
-%type <Object> block
+%type <list> list_values
+%type <value> value
+%type <list> list
+%type <string> long_text
+%type <kv> kv
+%type <object> object block
+%type <any> full
+%type <Total> main
 
 %start main
 
 %%
 
-main: full
+main: WORD full
   {
-    setTotal(yylex, $1)
+    yylex.(*lexer).total = Total{
+                           		docName: $1,
+                           		data: $2,
+                           	}
   }
 ;
 
-full: WORD block {
-	$$ = Total{
-		docName: $1,
-		data: $2,
-	}
-};
+full: block	{ $$ = &value{kind:OBJECT, data:$1} }
+	| list 	{ $$ = &value{kind:LIST, data:$1} };
 
-block: OP 	     CL { $$ = newObject() }
+block: OP 	     CL  { $$ = newObject() }
 	|  OP object CL { $$ = $2 }
 	;
 
-object: pair { $$ = newObject($1) }
-	| object pair { $$ = append($1, $2) }
+object: kv { $$ = object{$1} }
+	| object kv { $$ = append($1, $2) }
 	;
 
-pair: WORD COLON value { $$ = &Pair{name: $1, value: $3} }
-	| WORD COLON block { $$ = &Pair{name: $1, value: &Value{kind: OBJECT, data: $3}} }
+kv:   WORD COLON value { $$ = &Kv{name: $1, value: $3} }
+	| WORD       block { $$ = &Kv{name: $1, value: &value{kind: OBJECT, data: $2}} }
 	;
 
-value: INTEGER { $$ = &Value{kind: INTEGER, data: $1} }
-	| FLOAT { $$ = &Value{kind: FLOAT, data: $1} }
-	| NULLTYPE { $$ = &Value{kind: NULLTYPE, data: nil} }
-	| WORD { $$ = &Value{kind: WORD, data:$1 } }
-	| BOOLEAN { $$ = &Value{kind: BOOLEAN, data: $1 } }
-	| long_text { $$ = &Value{ kind: TEXT, data: $1 } }
-	| list {$$ = &Value {kind: LIST, data: $1 }}
+value: INTEGER { $$ = &value{kind: INTEGER, data: $1} }
+	| FLOAT { $$ = &value{kind: FLOAT, data: $1} }
+	| NULLTYPE { $$ = &value{kind: NULLTYPE, data: nil} }
+	| WORD { $$ = &value{kind: WORD, data:$1} }
+	| BOOLEAN { $$ = &value{kind: BOOLEAN, data: $1} }
+	| long_text { $$ = &value{ kind: TEXT, data: $1} }
+	| list { $$ = &value{kind: LIST, data: $1} }
+	| block { $$ = &value{kind: OBJECT, data: $1} }
 	;
 
 
-long_text: OLT CLT { $$ = "" }
-	| OLT value CLT
+long_text: OLT CLT 				{ $$ = "" }
+	| OLT TEXT CLT 				{ $$ = $2 }
 	;
 
-list: OB CB { $$ = &Value{kind: LIST, data: &Values{} } }
-	| OB list_values CB { $$ = &Value{kind: LIST, data: $2 } }
+list: OB 			 CB 		{ $$ = values{} }
+	| OB list_values CB 		{ $$ = $2 }
 	;
 
-list_values: value { $$ = Values{$1} }
-	| value list_values
-	{
-		$$ = append($2, $1	)
-	}
+list_values: list_values value 	{ $$ = append($1, $2) }
+	| value 					{ $$ = values{$1} }
 	;
