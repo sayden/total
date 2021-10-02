@@ -36,7 +36,7 @@ package total
 // Types
 %type <list> list_values list
 %type <value> value full
-%type <string> long_text words
+%type <string> long_text
 %type <kv> kv
 %type <object> object block
 %type <Total> main
@@ -73,14 +73,11 @@ value: INTEGER { $$ = &value{kind: INTEGER, data: $1} }
 	| FLOAT { $$ = &value{kind: FLOAT, data: $1} }
 	| NULLTYPE { $$ = &value{kind: NULLTYPE, data: nil} }
 	| BOOLEAN { $$ = &value{kind: BOOLEAN, data: $1} }
-	| words { $$ = &value{kind: WORD, data:$1} }
+	| WORD { $$ = &value{kind: WORD, data:$1} }
 	| long_text { $$ = &value{ kind: TEXT, data: $1} }
 	| list { $$ = &value{kind: LIST, data: $1} }
 	| block { $$ = &value{kind: OBJECT, data: $1} }
 	;
-
-words: WORD	{ $$ = $1 }
-	| words WORD { $$ = $1+$2  }
 
 long_text: OLT CLT 				{ $$ = "" }
 	| OLT TEXT CLT 				{ $$ = $2 }
