@@ -12,6 +12,8 @@ import (
 	"unicode"
 )
 
+var word = regexp.MustCompile("^[a-zA-Z_0-9,\\.@]+$")
+var integer = regexp.MustCompile("^[0-9]+$")
 
 type lexer struct {
 	identRune          func(ch rune, i int) bool
@@ -21,8 +23,13 @@ type lexer struct {
 	total total
 	err   error
 
+	ignoreNewline bool
+
 	isLongText bool
+	isWord     bool
 	longText   string
+
+	tokenStack []int
 
 	s scanner.Scanner
 }
@@ -43,6 +50,8 @@ func newLex(input []byte) *lexer {
 func (p *lexer) init(s string) {
 	p.s.Mode = scanner.ScanRawStrings
 	p.s.Init(strings.NewReader(s))
+	p.ignoreNewline = true
+	p.tokenStack = make([]int, 0)
 
 	p.identRune = func(ch rune, i int) bool {
 		return ch == '>' || ch == '|' || ch == '<' || ch == '_' || unicode.IsLetter(ch) || unicode.IsDigit(ch)
@@ -53,12 +62,23 @@ func (p *lexer) init(s string) {
 	p.originalWhitespace = p.s.Whitespace
 }
 
-var word = regexp.MustCompile("[a-zA-Z_0-9]+")
-var integer = regexp.MustCompile("^[0-9]+$")
+func (p *lexer) popStack() int {
+	last := p.tokenStack[len(p.tokenStack)-1]
+	p.tokenStack = p.tokenStack[0 : len(p.tokenStack)-1]
+	return last
+}
+
+func (p *lexer) push(n int) {
+	p.tokenStack = append(p.tokenStack, n)
+}
 
 // Lex (MANDATORY) satisfies yyLexer. Called every time the parser wants a new token
 // which MUST be placed in its respective variable on yySymType (ch or part in this example)
 func (p *lexer) Lex(lval *yySymType) int {
+	if len(p.tokenStack )> 0 {
+		return p.popStack()
+	}
+
 	if p.isLongText {
 		p.longText = p.longTextCapture()
 		p.isLongText = false
@@ -69,11 +89,17 @@ func (p *lexer) Lex(lval *yySymType) int {
 		return CLT
 	}
 
+	if p.isWord {
+		p.isWord = false
+		p.ignoreNewline = true
+		p.restoreLexer()
+		return NL
+	}
+
 	for tok := p.s.Scan(); tok != scanner.EOF; tok = p.s.Scan() {
 		txt := p.s.TokenText()
-		_, n := p.captureValue(txt, lval)
-		if n != -1 {
-			return n
+		if txt == "\n" && p.ignoreNewline {
+			continue
 		}
 
 		switch txt {
@@ -99,6 +125,12 @@ func (p *lexer) Lex(lval *yySymType) int {
 			return CB
 		}
 
+		_, n := p.captureValue(txt, lval)
+		// -1 represents an unknown token
+		if n != -1 {
+			return n
+		}
+
 		return int(tok)
 	}
 
@@ -108,6 +140,15 @@ func (p *lexer) Lex(lval *yySymType) int {
 func (l *lexer) prepareLongText() {
 	l.s.IsIdentRune = func(ch rune, i int) bool {
 		return ch == '|' || ch == '<'
+	}
+
+	l.s.Whitespace = 0
+}
+
+func (l *lexer) prepareWord() {
+	l.ignoreNewline = false
+	l.s.IsIdentRune = func(ch rune, i int) bool {
+		return ch == '\n'
 	}
 
 	l.s.Whitespace = 0
@@ -129,6 +170,21 @@ func (p *lexer) longTextCapture() string {
 	return longtext
 }
 
+func (p *lexer) wordCapture(s string) string {
+	word := s
+	for tok := p.s.Scan(); tok != scanner.EOF; tok = p.s.Scan() {
+		txt := p.s.TokenText()
+
+		if tok == '\n' {
+			break
+		}
+
+		word += txt
+	}
+
+	return word
+}
+
 func (p *lexer) captureList(lval *yySymType) int {
 	list := make(values, 0)
 
@@ -147,7 +203,10 @@ func (p *lexer) captureList(lval *yySymType) int {
 	return LIST
 }
 
+// captureValue attempts to return a number or a string and the representative token.
+// It returns -1 if none is found
 func (p *lexer) captureValue(txt string, lval *yySymType) (interface{}, int) {
+	// check if it's an integer and parse it
 	if integer.MatchString(txt) {
 		n, err := strconv.Atoi(txt)
 		lval.integer = n
@@ -157,6 +216,7 @@ func (p *lexer) captureValue(txt string, lval *yySymType) (interface{}, int) {
 		return n, INTEGER
 	}
 
+	//check if it's a string and parse it
 	if word.MatchString(txt) {
 		return p.checkString(txt, lval)
 	}
@@ -177,11 +237,20 @@ func (p *lexer) checkString(txt string, lval *yySymType) (interface{}, int) {
 		return false, BOOLEAN
 	}
 
-	lval.string = txt
+	peek := p.s.Peek()
+	if peek == '\n' || peek == ':' || peek == '{' {
+		lval.string = txt
+		return txt, WORD
+	}
+
+	p.prepareWord()
+	w := p.wordCapture(txt)
+	lval.string = w
 	return txt, WORD
 }
 
 func (p *lexer) restoreLexer() {
+	p.ignoreNewline = true
 	p.s.IsIdentRune = p.identRune
 	p.s.Mode = p.originalMode
 	p.s.Whitespace = p.originalWhitespace

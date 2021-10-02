@@ -26,17 +26,20 @@ const CL = 57347
 const COLON = 57348
 const OB = 57349
 const CB = 57350
-const OLT = 57351
-const CLT = 57352
-const VALUE = 57353
-const FLOAT = 57354
-const INTEGER = 57355
-const TEXT = 57356
-const WORD = 57357
-const BOOLEAN = 57358
-const NULLTYPE = 57359
-const LIST = 57360
-const OBJECT = 57361
+const DQUOTE = 57351
+const SQUOTE = 57352
+const NL = 57353
+const OLT = 57354
+const CLT = 57355
+const VALUE = 57356
+const FLOAT = 57357
+const INTEGER = 57358
+const TEXT = 57359
+const WORD = 57360
+const BOOLEAN = 57361
+const NULLTYPE = 57362
+const LIST = 57363
+const OBJECT = 57364
 
 var yyToknames = [...]string{
 	"$end",
@@ -47,6 +50,9 @@ var yyToknames = [...]string{
 	"COLON",
 	"OB",
 	"CB",
+	"DQUOTE",
+	"SQUOTE",
+	"NL",
 	"OLT",
 	"CLT",
 	"VALUE",
@@ -74,52 +80,57 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 53
+const yyLast = 62
 
 var yyAct = [...]int{
-	14, 24, 30, 2, 6, 33, 31, 7, 28, 23,
-	1, 11, 16, 15, 29, 18, 19, 17, 22, 6,
-	6, 4, 7, 7, 12, 23, 8, 32, 16, 15,
-	27, 18, 19, 17, 6, 9, 11, 7, 10, 23,
-	20, 21, 16, 15, 5, 18, 19, 17, 25, 6,
-	3, 26, 13,
+	14, 6, 36, 32, 7, 30, 25, 26, 8, 24,
+	35, 38, 16, 15, 31, 23, 18, 17, 2, 6,
+	11, 11, 7, 12, 25, 22, 39, 24, 4, 37,
+	16, 15, 40, 23, 18, 17, 6, 29, 33, 7,
+	1, 25, 34, 10, 24, 9, 6, 16, 15, 7,
+	23, 18, 17, 27, 6, 21, 28, 19, 5, 20,
+	3, 13,
 }
 
 var yyPact = [...]int{
-	-12, -1000, 15, -1000, -1000, -1000, 21, 16, -1000, -4,
-	-1000, 45, -1000, 0, -1000, -1000, -1000, -1000, -1000, -1000,
-	-1000, -1000, -1000, -8, -1000, -1000, 30, -1000, -1000, -1000,
-	-1000, -5, -1000, -1000,
+	0, -1000, 42, -1000, -1000, -1000, 3, 15, -1000, 2,
+	-1000, 50, -1000, -3, -1000, -1000, -1000, -1000, -1000, -15,
+	-1000, -1000, -1000, -1000, 25, -7, -1000, -1000, 32, -1000,
+	-1000, -1000, -1000, -1000, -2, 17, -1000, 21, -1000, -1000,
+	-1000,
 }
 
 var yyPgo = [...]int{
-	0, 52, 0, 50, 41, 40, 38, 35, 18, 10,
+	0, 61, 55, 0, 60, 59, 57, 43, 45, 25,
+	40,
 }
 
 var yyR1 = [...]int{
-	0, 9, 3, 3, 8, 8, 7, 7, 6, 6,
-	2, 2, 2, 2, 2, 2, 2, 2, 5, 5,
-	4, 4, 1, 1,
+	0, 10, 4, 4, 9, 9, 8, 8, 7, 7,
+	3, 3, 3, 3, 3, 3, 3, 3, 6, 6,
+	5, 5, 5, 5, 2, 2, 1, 1,
 }
 
 var yyR2 = [...]int{
-	0, 2, 1, 1, 2, 3, 1, 2, 3, 2,
-	1, 1, 1, 1, 1, 1, 1, 1, 2, 3,
-	2, 3, 2, 1,
+	0, 2, 1, 1, 2, 3, 1, 2, 4, 2,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 2,
+	2, 3, 3, 2, 2, 3, 2, 1,
 }
 
 var yyChk = [...]int{
-	-1000, -9, 15, -3, -8, -4, 4, 7, 5, -7,
-	-6, 15, 8, -1, -2, 13, 12, 17, 15, 16,
-	-5, -4, -8, 9, 5, -6, 6, -8, 8, -2,
-	10, 14, -2, 10,
+	-1000, -10, 18, -4, -9, -2, 4, 7, 5, -8,
+	-7, 18, 8, -1, -3, 16, 15, 20, 19, -6,
+	-5, -2, -9, 18, 12, 9, 5, -7, 6, -9,
+	8, -3, 18, 13, 17, 17, 9, -3, 13, 9,
+	11,
 }
 
 var yyDef = [...]int{
 	0, -2, 0, 1, 2, 3, 0, 0, 4, 0,
-	6, 0, 20, 0, 23, 10, 11, 12, 13, 14,
-	15, 16, 17, 0, 5, 7, 0, 9, 21, 22,
-	18, 0, 8, 19,
+	6, 0, 24, 0, 27, 10, 11, 12, 13, 14,
+	15, 16, 17, 18, 0, 0, 5, 7, 0, 9,
+	25, 26, 19, 20, 0, 0, 23, 0, 21, 22,
+	8,
 }
 
 var yyTok1 = [...]int{
@@ -128,7 +139,8 @@ var yyTok1 = [...]int{
 
 var yyTok2 = [...]int{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-	12, 13, 14, 15, 16, 17, 18, 19,
+	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+	22,
 }
 
 var yyTok3 = [...]int{
@@ -509,7 +521,7 @@ yydefault:
 			yyVAL.object = append(yyDollar[1].object, yyDollar[2].kv)
 		}
 	case 8:
-		yyDollar = yyS[yypt-3 : yypt+1]
+		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			yyVAL.kv = &keyValue{name: yyDollar[1].string, value: yyDollar[3].value}
 		}
@@ -536,12 +548,12 @@ yydefault:
 	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.value = &value{kind: WORD, data: yyDollar[1].string}
+			yyVAL.value = &value{kind: BOOLEAN, data: yyDollar[1].boolean}
 		}
 	case 14:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.value = &value{kind: BOOLEAN, data: yyDollar[1].boolean}
+			yyVAL.value = &value{kind: WORD, data: yyDollar[1].string}
 		}
 	case 15:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -559,31 +571,51 @@ yydefault:
 			yyVAL.value = &value{kind: OBJECT, data: yyDollar[1].object}
 		}
 	case 18:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.string = ""
+			yyVAL.string = yyDollar[1].string
 		}
 	case 19:
-		yyDollar = yyS[yypt-3 : yypt+1]
+		yyDollar = yyS[yypt-2 : yypt+1]
 		{
-			yyVAL.string = yyDollar[2].string
+			yyVAL.string = yyDollar[1].string + yyDollar[2].string
 		}
 	case 20:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		{
-			yyVAL.list = values{}
+			yyVAL.string = ""
 		}
 	case 21:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.list = yyDollar[2].list
+			yyVAL.string = yyDollar[2].string
 		}
 	case 22:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.string = yyDollar[2].string
+		}
+	case 23:
+		yyDollar = yyS[yypt-2 : yypt+1]
+		{
+			yyVAL.string = ""
+		}
+	case 24:
+		yyDollar = yyS[yypt-2 : yypt+1]
+		{
+			yyVAL.list = values{}
+		}
+	case 25:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.list = yyDollar[2].list
+		}
+	case 26:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		{
 			yyVAL.list = append(yyDollar[1].list, yyDollar[2].value)
 		}
-	case 23:
+	case 27:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.list = values{yyDollar[1].value}

@@ -1,6 +1,7 @@
 package total
 
 import (
+	"github.com/k0kubun/pp"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -10,7 +11,7 @@ var complexObject = `user {
 		list_of_strings: [as asdf asdfa]
 		key: value
 		number: 12
-		another_key: another_value
+		another_key: "another value"
 		OneMore4: asda
 		whatifitsnull: null
 		another_number: 99
@@ -38,20 +39,25 @@ func TestMarshalFromStruct(t *testing.T) {
 		Number     int    `json:"number"`
 	}{
 		Key:        "a_key",
-		AnotherKey: "a_value",
+		AnotherKey: "a value",
 		Number:     99,
 	}
 
 	yyErrorVerbose = true
 	byt, err := Marshal("user", testStruct)
 	assert.NoError(t, err)
+	pp.Println(string(byt))
 
 	var m2 map[string]interface{}
 	err = Unmarshal(byt, &m2)
 	assert.NoError(t, err)
 
+	pp.Print(m2)
+
 	assert.Equal(t, "a_key", m2["key"])
+	assert.Equal(t, "a value", m2["another_key"])
 	assert.Equal(t, 99.0, m2["number"].(float64))
+
 }
 
 func TestMarshalFromMapStringInterface(t *testing.T) {

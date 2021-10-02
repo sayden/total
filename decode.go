@@ -173,7 +173,7 @@ func traverseDocName(s string, buf *bytes.Buffer) {
 func traverseValueToJSON(v *value, buf *bytes.Buffer) error {
 	switch v.kind {
 	case WORD:
-		buf.WriteString(fmt.Sprintf(`"%s"`, v.data.(string)))
+		buf.WriteString(fmt.Sprintf(`"%s"`, escapeText(v.data.(string))))
 	case OBJECT:
 		traverseObjectToJSON(v.data.(object), buf)
 	case FLOAT:

@@ -20,8 +20,8 @@ package total
 }
 
 // Separators
-%token <Char> OP CL COLON OB CB
-%token <String> OLT CLT
+%token <char> OP CL COLON OB CB DQUOTE SQUOTE NL
+%token <string> OLT CLT
 
 // Tokens
 %token <value> VALUE
@@ -34,10 +34,9 @@ package total
 %token <object> OBJECT
 
 // Types
-%type <list> list_values
+%type <list> list_values list
 %type <value> value full
-%type <list> list
-%type <string> long_text
+%type <string> long_text words
 %type <kv> kv
 %type <object> object block
 %type <Total> main
@@ -56,7 +55,8 @@ main: WORD full
 ;
 
 full: block	{ $$ = &value{kind:OBJECT, data:$1} }
-	| list 	{ $$ = &value{kind:LIST, data:$1} };
+	| list 	{ $$ = &value{kind:LIST, data:$1} }
+	;
 
 block: OP 	     CL  { $$ = newObject() }
 	|  OP object CL { $$ = $2 }
@@ -66,23 +66,27 @@ object: kv { $$ = object{$1} }
 	| object kv { $$ = append($1, $2) }
 	;
 
-kv:   WORD COLON value { $$ = &keyValue{name: $1, value: $3} }
+kv:   WORD COLON value NL { $$ = &keyValue{name: $1, value: $3} }
 	| WORD       block { $$ = &keyValue{name: $1, value: &value{kind: OBJECT, data: $2}} }
 	;
 
 value: INTEGER { $$ = &value{kind: INTEGER, data: $1} }
 	| FLOAT { $$ = &value{kind: FLOAT, data: $1} }
 	| NULLTYPE { $$ = &value{kind: NULLTYPE, data: nil} }
-	| WORD { $$ = &value{kind: WORD, data:$1} }
 	| BOOLEAN { $$ = &value{kind: BOOLEAN, data: $1} }
+	| words { $$ = &value{kind: WORD, data:$1} }
 	| long_text { $$ = &value{ kind: TEXT, data: $1} }
 	| list { $$ = &value{kind: LIST, data: $1} }
 	| block { $$ = &value{kind: OBJECT, data: $1} }
 	;
 
+words: WORD	{ $$ = $1 }
+	| words WORD { $$ = $1+$2  }
 
 long_text: OLT CLT 				{ $$ = "" }
 	| OLT TEXT CLT 				{ $$ = $2 }
+	| DQUOTE TEXT DQUOTE		{ $$ = $2 }
+	| DQUOTE DQUOTE				{ $$ = "" }
 	;
 
 list: OB 			 CB 		{ $$ = values{} }
