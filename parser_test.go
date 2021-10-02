@@ -6,39 +6,14 @@ import (
 )
 
 func TestDocument(t *testing.T) {
-	in := `user {
-		long_text: |>'this' is "maaaadnessss" \n <|
-		list2: [as asdf asdfa]
-		key: value
-		number: 12
-		another_key: another_value
-		OneMore4: asda
-		whatifitsnull: null
-		another_number: 99
-		inner_block {
-			inner_key: inner_value
-			list: [1 2 3]
-			more_inner {
-				hello: world
-			}
-			list_of_blocks: [
-				{
-					list: [4 5 6]
-				}
-				{
-					hello: world
-				}
-			]
-		}
-	}`
 	yyErrorVerbose = true
 	//yyDebug = 2
 
-	v, err := parse([]byte(in))
+	v, err := parse([]byte(complexObject))
 	assert.NoError(t, err)
 
 	assert.Equal(t, "user", v.docName)
-	root := v.data.(*value)
+	root := v.data
 	assert.Equal(t, OBJECT, root.kind)
 	obj := root.data.(object)
 
@@ -75,7 +50,7 @@ func TestListDocument(t *testing.T) {
 	//pp.Print(v)
 
 	assert.Equal(t, "user", v.docName)
-	blockInfo := v.data.(*value)
+	blockInfo := v.data
 	assert.Equal(t, LIST, blockInfo.kind, "doc has type list")
 	blocksList := blockInfo.data.(values)
 	assert.Equal(t, OBJECT, blocksList[0].kind, "first item in this doc has a list of key-values")
@@ -108,9 +83,8 @@ func TestListDocument(t *testing.T) {
 	v, err = parse([]byte(in))
 	assert.NoError(t, err)
 	assert.Equal(t, "user", v.docName)
-	blockInfo = v.data.(*value)
+	blockInfo = v.data
 	assert.Equal(t, OBJECT, blockInfo.kind, "doc has type object")
 	simpleBlock := blockInfo.data.(object)
 	assert.Equal(t, WORD, simpleBlock[0].value.kind)
-
 }

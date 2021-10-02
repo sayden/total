@@ -5,10 +5,10 @@ import __yyfmt__ "fmt"
 
 type yySymType struct {
 	yys   int
-	Total Total
+	Total total
 
 	value  *value
-	kv     *Kv
+	kv     *keyValue
 	object object
 
 	char     rune
@@ -80,9 +80,9 @@ var yyAct = [...]int{
 	14, 24, 30, 2, 6, 33, 31, 7, 28, 23,
 	1, 11, 16, 15, 29, 18, 19, 17, 22, 6,
 	6, 4, 7, 7, 12, 23, 8, 32, 16, 15,
-	27, 18, 19, 17, 6, 3, 11, 7, 10, 23,
-	9, 21, 16, 15, 5, 18, 19, 17, 25, 6,
-	20, 26, 13,
+	27, 18, 19, 17, 6, 9, 11, 7, 10, 23,
+	20, 21, 16, 15, 5, 18, 19, 17, 25, 6,
+	3, 26, 13,
 }
 
 var yyPact = [...]int{
@@ -93,13 +93,13 @@ var yyPact = [...]int{
 }
 
 var yyPgo = [...]int{
-	0, 52, 0, 41, 50, 38, 40, 18, 35, 10,
+	0, 52, 0, 50, 41, 40, 38, 35, 18, 10,
 }
 
 var yyR1 = [...]int{
-	0, 9, 8, 8, 7, 7, 6, 6, 5, 5,
-	2, 2, 2, 2, 2, 2, 2, 2, 4, 4,
-	3, 3, 1, 1,
+	0, 9, 3, 3, 8, 8, 7, 7, 6, 6,
+	2, 2, 2, 2, 2, 2, 2, 2, 5, 5,
+	4, 4, 1, 1,
 }
 
 var yyR2 = [...]int{
@@ -109,9 +109,9 @@ var yyR2 = [...]int{
 }
 
 var yyChk = [...]int{
-	-1000, -9, 15, -8, -7, -3, 4, 7, 5, -6,
-	-5, 15, 8, -1, -2, 13, 12, 17, 15, 16,
-	-4, -3, -7, 9, 5, -5, 6, -7, 8, -2,
+	-1000, -9, 15, -3, -8, -4, 4, 7, 5, -7,
+	-6, 15, 8, -1, -2, 13, 12, 17, 15, 16,
+	-5, -4, -8, 9, 5, -6, 6, -8, 8, -2,
 	10, 14, -2, 10,
 }
 
@@ -473,20 +473,20 @@ yydefault:
 	case 1:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		{
-			yylex.(*lexer).total = Total{
+			yylex.(*lexer).total = total{
 				docName: yyDollar[1].string,
-				data:    yyDollar[2].any,
+				data:    yyDollar[2].value,
 			}
 		}
 	case 2:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.any = &value{kind: OBJECT, data: yyDollar[1].object}
+			yyVAL.value = &value{kind: OBJECT, data: yyDollar[1].object}
 		}
 	case 3:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.any = &value{kind: LIST, data: yyDollar[1].list}
+			yyVAL.value = &value{kind: LIST, data: yyDollar[1].list}
 		}
 	case 4:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -511,12 +511,12 @@ yydefault:
 	case 8:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.kv = &Kv{name: yyDollar[1].string, value: yyDollar[3].value}
+			yyVAL.kv = &keyValue{name: yyDollar[1].string, value: yyDollar[3].value}
 		}
 	case 9:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		{
-			yyVAL.kv = &Kv{name: yyDollar[1].string, value: &value{kind: OBJECT, data: yyDollar[2].object}}
+			yyVAL.kv = &keyValue{name: yyDollar[1].string, value: &value{kind: OBJECT, data: yyDollar[2].object}}
 		}
 	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]

@@ -2,23 +2,19 @@ package total
 
 import "errors"
 
-type Total struct {
+type total struct {
 	docName string
-	data    interface{}
+	data    *value
 }
 
-func (t *Total)getData()(interface{}, error){
+func (t *total) getData() (interface{}, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (t *Total)mustGetData()interface{}{
+func (t *total) mustGetData() interface{} {
 	return nil
 }
 
-func (t *Total) getRoot() object {
-	return t.data.(object)
-}
-
-func (t *Total) getList() values {
-	return t.data.(values)
+func (t *total) getRoot() *value {
+	return t.data
 }

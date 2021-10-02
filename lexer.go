@@ -18,7 +18,7 @@ type lexer struct {
 	originalMode       uint
 	originalWhitespace uint64
 
-	total Total
+	total total
 	err   error
 
 	isLongText bool
@@ -27,7 +27,7 @@ type lexer struct {
 	s scanner.Scanner
 }
 
-func parse(input []byte) (*Total, error) {
+func parse(input []byte) (*total, error) {
 	l := newLex(input)
 	_ = yyParse(l)
 	return &l.total, l.err

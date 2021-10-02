@@ -3,10 +3,10 @@ package total
 %}
 
 %union{
-	Total Total
+	Total total
 
 	value *value
-	kv *Kv
+	kv *keyValue
 	object object
 
 	char rune
@@ -35,12 +35,11 @@ package total
 
 // Types
 %type <list> list_values
-%type <value> value
+%type <value> value full
 %type <list> list
 %type <string> long_text
 %type <kv> kv
 %type <object> object block
-%type <any> full
 %type <Total> main
 
 %start main
@@ -49,7 +48,7 @@ package total
 
 main: WORD full
   {
-    yylex.(*lexer).total = Total{
+    yylex.(*lexer).total = total{
                            		docName: $1,
                            		data: $2,
                            	}
@@ -67,8 +66,8 @@ object: kv { $$ = object{$1} }
 	| object kv { $$ = append($1, $2) }
 	;
 
-kv:   WORD COLON value { $$ = &Kv{name: $1, value: $3} }
-	| WORD       block { $$ = &Kv{name: $1, value: &value{kind: OBJECT, data: $2}} }
+kv:   WORD COLON value { $$ = &keyValue{name: $1, value: $3} }
+	| WORD       block { $$ = &keyValue{name: $1, value: &value{kind: OBJECT, data: $2}} }
 	;
 
 value: INTEGER { $$ = &value{kind: INTEGER, data: $1} }
