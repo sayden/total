@@ -67,7 +67,6 @@ object: kv { $$ = object{$1} }
 	;
 
 kv:   WORD COLON value NL { $$ = &keyValue{name: $1, value: $3} }
-	| WORD       block { $$ = &keyValue{name: $1, value: &value{kind: OBJECT, data: $2}} }
 	;
 
 value: INTEGER { $$ = &value{kind: INTEGER, data: $1} }

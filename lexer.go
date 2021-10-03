@@ -12,7 +12,7 @@ import (
 	"unicode"
 )
 
-var word = regexp.MustCompile("^[a-zA-Z_0-9,\\.@]+$")
+var word = regexp.MustCompile("^[a-zA-Z_0-9,\\.@ ]+$")
 var integer = regexp.MustCompile("^[0-9]+$")
 
 type lexer struct {
@@ -48,8 +48,9 @@ func newLex(input []byte) *lexer {
 }
 
 func (p *lexer) init(s string) {
-	p.s.Mode = scanner.ScanRawStrings
+	p.s.Mode = scanner.ScanStrings
 	p.s.Init(strings.NewReader(s))
+	p.s.Whitespace = 1<<'\t' | 1<<'\r' | 1<<' '
 	p.ignoreNewline = true
 	p.tokenStack = make([]int, 0)
 
@@ -75,49 +76,56 @@ func (p *lexer) push(n int) {
 // Lex (MANDATORY) satisfies yyLexer. Called every time the parser wants a new token
 // which MUST be placed in its respective variable on yySymType (ch or part in this example)
 func (p *lexer) Lex(lval *yySymType) int {
-	if len(p.tokenStack )> 0 {
-		return p.popStack()
-	}
-
-	if p.isLongText {
-		p.longText = p.longTextCapture()
-		p.isLongText = false
-		lval.string = p.longText
-		return TEXT
-	} else if p.longText != "" {
-		p.longText = ""
-		return CLT
-	}
-
-	if p.isWord {
-		p.isWord = false
-		p.ignoreNewline = true
-		p.restoreLexer()
-		return NL
-	}
+	//if len(p.tokenStack )> 0 {
+	//	return p.popStack()
+	//}
+	//
+	//if p.isLongText {
+	//	p.longText = p.longTextCapture()
+	//	p.isLongText = false
+	//	lval.string = p.longText
+	//	return TEXT
+	//} else if p.longText != "" {
+	//	p.longText = ""
+	//	return CLT
+	//}
+	//
+	//if p.isWord {
+	//	p.isWord = false
+	//	p.ignoreNewline = true
+	//	p.restoreLexer()
+	//	return NL
+	//}
 
 	for tok := p.s.Scan(); tok != scanner.EOF; tok = p.s.Scan() {
 		txt := p.s.TokenText()
-		if txt == "\n" && p.ignoreNewline {
-			continue
-		}
-
-		switch txt {
-		case "|>":
-			p.prepareLongText()
-			p.isLongText = true
-			return OLT
-		case "<|":
-			p.restoreLexer()
-			return CLT
-		}
+		//if txt == "\n" && p.ignoreNewline {
+		//	continue
+		//}
+		//
+		//switch txt {
+		//case "|>":
+		//	p.prepareLongText()
+		//	p.isLongText = true
+		//	return OLT
+		//case "<|":
+		//	p.restoreLexer()
+		//	return CLT
+		//}
 
 		switch tok {
+		case '\n':
+			if p.ignoreNewline {
+				continue
+			}
+			p.restoreLexer()
+			return NL
 		case '{':
 			return OP
 		case '}':
 			return CL
 		case ':':
+			p.prepareValueCapture()
 			return COLON
 		case '[':
 			return OB
@@ -135,6 +143,16 @@ func (p *lexer) Lex(lval *yySymType) int {
 	}
 
 	return 0
+}
+
+func (l *lexer) prepareValueCapture() {
+	l.ignoreNewline = false
+	l.s.Whitespace = scanner.GoWhitespace
+	l.s.IsIdentRune = func(ch rune, i int) bool {
+		return ch != '\n'
+	}
+
+	l.s.Whitespace = 0
 }
 
 func (l *lexer) prepareLongText() {
@@ -206,6 +224,11 @@ func (p *lexer) captureList(lval *yySymType) int {
 // captureValue attempts to return a number or a string and the representative token.
 // It returns -1 if none is found
 func (p *lexer) captureValue(txt string, lval *yySymType) (interface{}, int) {
+	txt = strings.TrimSpace(txt)
+	txt = strings.TrimFunc(txt, func(r rune) bool {
+		return r == '"'
+	})
+
 	// check if it's an integer and parse it
 	if integer.MatchString(txt) {
 		n, err := strconv.Atoi(txt)
@@ -237,15 +260,8 @@ func (p *lexer) checkString(txt string, lval *yySymType) (interface{}, int) {
 		return false, BOOLEAN
 	}
 
-	peek := p.s.Peek()
-	if peek == '\n' || peek == ':' || peek == '{' {
-		lval.string = txt
-		return txt, WORD
-	}
 
-	p.prepareWord()
-	w := p.wordCapture(txt)
-	lval.string = w
+	lval.string = strings.TrimSpace(txt)
 	return txt, WORD
 }
 
