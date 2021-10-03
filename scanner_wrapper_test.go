@@ -1,6 +1,7 @@
 package total
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -41,6 +42,7 @@ func TestIdentLhsName(t *testing.T) {
 }
 
 func TestIdentRhsName(t *testing.T) {
+	fmt.Println('a','z','A','Z','0','9')
 	table := map[string]string{
 		" {\n":                  "{",
 		" [\n":                  "[",
