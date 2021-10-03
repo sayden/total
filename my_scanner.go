@@ -72,12 +72,13 @@ func (m *myscanner) Scan() string {
 			if tok == ':' {
 				// Add colon to stack
 				m.push(":")
+				m.pos++
 
-				if string(m.input[m.pos+1:m.pos+2]) == ">" || string(m.input[m.pos+1:m.pos+3]) == " >" {
+				if string(m.input[m.pos:m.pos+1]) == ">" || string(m.input[m.pos:m.pos+2]) == " >" {
 					// Long text found.
 
 					// skip colon for now, I'll return one later. Skip leading space or gt char too
-					m.pos += 2
+					m.pos++
 
 					//skip long text opening token if exists
 					if m.input[m.pos] == '>' {
@@ -93,6 +94,7 @@ func (m *myscanner) Scan() string {
 							m.currentToken = m.currentToken[0:0]
 							m.pos++
 							m.push(strings.TrimSpace(string(temp)))
+							m.push("\n")
 							return m.first()
 						}
 					}
@@ -103,11 +105,16 @@ func (m *myscanner) Scan() string {
 				}
 			} else if tok == '\n' {
 				// RHS finished
+				m.push("\n")
+				m.pos++
 				m.separator = lhsSeparators
 				m.identifier = lhsIdentifiers
+			} else {
+				m.pos++
+				m.push(string(tok))
 			}
-			m.pos++
-			return string(tok)
+
+			return m.first()
 		}
 	}
 
