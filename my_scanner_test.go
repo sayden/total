@@ -30,6 +30,7 @@ func TestScan(t *testing.T) {
 		hello: world
 		number: 99
 		sentence: hello world
+		long_text:>some stuff "going on" here<
 		number2: 99.2
 		inner: {
 			hello:world
