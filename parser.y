@@ -20,7 +20,7 @@ package total
 }
 
 // Separators
-%token <char> OP CL COLON OB CB DQUOTE SQUOTE NL
+%token <char> OP CL COLON OB CB NL
 %token <string> OLT CLT
 
 // Tokens
@@ -45,11 +45,11 @@ package total
 
 %%
 
-main: WORD full
+main: WORD COLON full
   {
-    yylex.(*lexer).total = total{
+    yylex.(*myscanner).total = total{
                            		docName: $1,
-                           		data: $2,
+                           		data: $3,
                            	}
   }
 ;
@@ -59,7 +59,8 @@ full: block	{ $$ = &value{kind:OBJECT, data:$1} }
 	;
 
 block: OP 	     CL  { $$ = newObject() }
-	|  OP object CL { $$ = $2 }
+	|  OP NL 	 CL  { $$ = newObject() }
+	|  OP NL object CL  { $$ = $3 }
 	;
 
 object: kv { $$ = object{$1} }
@@ -81,12 +82,12 @@ value: INTEGER { $$ = &value{kind: INTEGER, data: $1} }
 
 long_text: OLT CLT 				{ $$ = "" }
 	| OLT TEXT CLT 				{ $$ = $2 }
-	| DQUOTE TEXT DQUOTE		{ $$ = $2 }
-	| DQUOTE DQUOTE				{ $$ = "" }
 	;
 
-list: OB 			 CB 		{ $$ = values{} }
-	| OB list_values CB 		{ $$ = $2 }
+list: OB 			 	CB 		{ $$ = values{} }
+	| OB NL 	 	 	CB  	{ $$ = values{} }
+	| OB NL list_values NL CB      { $$ = $3 }
+	| OB list_values 	CB 		{ $$ = $2 }
 	;
 
 list_values: list_values value 	{ $$ = append($1, $2) }

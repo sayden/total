@@ -6,30 +6,27 @@ import (
 	"testing"
 )
 
-var complexObject = `user {
-		long_text: |>'this' is "maaaadnessss" \n <|
+var complexObject = `user: {
+		long_text: >'this' is "maaaadnessss" <
 		list_of_strings: [as asdf asdfa]
 		key: value
 		number: 12
-		another_key: "another value"
+		another_key: another value
 		OneMore4: asda
 		whatifitsnull: null
 		another_number: 99
-		inner_block {
+		inner_block: {
 			inner_key: inner_value
 			list_of_numbers: [1 2 3]
-			more_inner {
+			more_inner: {
 				hello: world
 			}
-			list_of_blocks: [
-				{
-					list_of_numbers: [4 5 6]
-				}
-				{
-					hello: world
-				}
-			]
 		}
+		list_of_blocks: [
+			{
+				hello: world
+			}
+		]
 	}`
 
 func TestMarshalFromStruct(t *testing.T) {
@@ -61,6 +58,7 @@ func TestMarshalFromStruct(t *testing.T) {
 }
 
 func TestMarshalFromMapStringInterface(t *testing.T) {
+	yyErrorVerbose = true
 	var m map[string]interface{}
 	err := Unmarshal([]byte(complexObject), &m)
 	assert.NoError(t, err)

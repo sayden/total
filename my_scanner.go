@@ -1,11 +1,16 @@
 package total
 
-import "strings"
+import (
+	"strings"
+)
 
 type myscanner struct {
 	input []byte
 
 	pos int
+
+	err error
+	total total
 
 	identifier func(byte) bool
 	separator  func(byte) bool
@@ -58,10 +63,11 @@ func (m *myscanner) Scan() string {
 
 			// If next token is not an identifier, it might be an ignored char or a separator, but this token ends here
 			if !m.identifier(m.input[m.pos+1]) {
-				temp := m.currentToken
-				m.currentToken = m.currentToken[0:0]
+				temp := string(m.currentToken)
+				m.currentToken = make([]byte,0)
 				m.pos++
-				return strings.TrimSpace(string(temp))
+				m.push(strings.TrimSpace(temp))
+				return m.first()
 			}
 
 			continue
@@ -74,16 +80,14 @@ func (m *myscanner) Scan() string {
 				m.push(":")
 				m.pos++
 
-				if string(m.input[m.pos:m.pos+1]) == ">" || string(m.input[m.pos:m.pos+2]) == " >" {
+				m.omitLeadingSpaces()
+
+				tok = m.input[m.pos]
+
+				switch tok {
+				case '>':
 					// Long text found.
-
-					// skip colon for now, I'll return one later. Skip leading space or gt char too
 					m.pos++
-
-					//skip long text opening token if exists
-					if m.input[m.pos] == '>' {
-						m.pos++
-					}
 
 					// Long text. It requires a new "mode" to recognize 2 tokens as the final identifier
 					for ; m.pos < len(m.input); m.pos++ {
@@ -92,20 +96,43 @@ func (m *myscanner) Scan() string {
 						} else {
 							temp := m.currentToken
 							m.currentToken = m.currentToken[0:0]
-							m.pos++
+							m.pos+=2
 							m.push(strings.TrimSpace(string(temp)))
 							m.push("\n")
 							return m.first()
 						}
 					}
-				} else {
+					break
+				case '[':
+					// List, can be anything
+					m.separator = rhsSeparators
+					m.identifier = lhsIdentifiers
+					m.push("[")
+					m.pos++
+				case '{':
+					// List, can be anything
+					m.separator = rhsSeparators
+					m.identifier = lhsIdentifiers
+					m.push("{")
+					m.pos++
+				default:
 					// Normal RHS
 					m.separator = rhsSeparators
 					m.identifier = rhsIdentifiers
 				}
+
+			} else if tok == ']' {
+				m.push("]")
+				m.pos++
+				m.separator = lhsSeparators
+				m.identifier = lhsIdentifiers
 			} else if tok == '\n' {
-				// RHS finished
 				m.push("\n")
+				m.pos++
+				m.separator = lhsSeparators
+				m.identifier = lhsIdentifiers
+			} else if tok == '}' {
+				m.push("}")
 				m.pos++
 				m.separator = lhsSeparators
 				m.identifier = lhsIdentifiers
@@ -116,25 +143,27 @@ func (m *myscanner) Scan() string {
 
 			return m.first()
 		}
+
+		// No identifier or separator found, omit
 	}
 
 	return ""
 }
 
+func (m *myscanner) omitLeadingSpaces() {
+	for ; m.pos < len(m.input); m.pos++ {
+		if m.input[m.pos] != ' ' {
+			return
+		}
+	}
+}
+
 func lhsSeparators(r byte) bool {
-	return r == '{' || r == '}' || r == '[' || r == ']' || r == ':'
+	return r == '{' || r == '}' || r == '[' || r == ']' || r == ':' || r == '\n'
 }
 
 func rhsSeparators(r byte) bool {
 	return r == '{' || r == '}' || r == '[' || r == ']' || r == '\n'
-}
-
-func longTextSeparator(r byte) bool {
-	return r == '<'
-}
-
-func longTextIdentifiers(r byte) bool {
-	return r != '<'
 }
 
 func lhsIdentifiers(r byte) bool {

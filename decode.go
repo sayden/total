@@ -63,6 +63,7 @@ func unmarshalTotal(data []byte) (*total, error) {
 }
 
 func traverseMsi(i interface{}, buf *bytes.Buffer) {
+	buf.WriteByte(':')
 	buf.WriteByte('{')
 	buf.WriteByte('\n')
 	defer buf.WriteByte('}')
@@ -111,12 +112,6 @@ func traverseMsi(i interface{}, buf *bytes.Buffer) {
 
 func processText(i interface{}, buf *bytes.Buffer) {
 	s := i.(string)
-
-	if strings.Contains(s, "\"") {
-		//consider a long text
-		buf.WriteString("|>")
-		defer buf.WriteString("<|")
-	}
 
 	buf.WriteString(s)
 }
